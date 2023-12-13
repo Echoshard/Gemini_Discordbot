@@ -37,7 +37,7 @@ Edit the `GeminiBotConfig.py` file must include:
 - `GOOGLE_AI_KEY`: Your Google AI API key. Google API Key can be acquired from https://makersuite.google.com/
 - `MAX_HISTORY`: The maximum number of messages to retain in history for each user. 0 will disable history
 
-then run "GeminiDiscordBot.py"
+then run `GeminiDiscordBot.py`
 
 ## Commands
 
