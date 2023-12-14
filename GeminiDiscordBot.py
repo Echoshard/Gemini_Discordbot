@@ -94,7 +94,7 @@ async def on_message(message):
                 if(MAX_HISTORY == 0):
                     response_text = await generate_response_with_text(cleaned_text)
                     #add AI response to history
-                    update_message_history(message.author.id,response_text)
+                    await split_and_send_messages(message, response_text, 1700)
                     return;
                 #Add users question to history
                 update_message_history(message.author.id,cleaned_text)
