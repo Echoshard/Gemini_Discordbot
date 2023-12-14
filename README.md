@@ -5,7 +5,7 @@
 ## Features
 
 - **AI-Driven Text Responses:** Gemini Bot can generate text responses to messages using Google's generative AI.
-- **Image Processing:** The bot can also respond to images, combining text and visual inputs for a more engaging interaction.
+- **Image Processing:** The bot can also respond to images, combining text and visual inputs for a more engaging interaction. (Images should be under 2.5 Megs)
 - **User Message History Management:** It maintains a history of user interactions via discordIDs, allowing for context-aware conversations.
 - **Customizable Settings:** Users can adjust various parameters like message history length and AI response settings.
 
