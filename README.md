@@ -13,7 +13,6 @@
 
 ### Requirements
 
-- Python 3.6 or higher
 - discord.py
 - aiohttp
 - Google's generativeai library
