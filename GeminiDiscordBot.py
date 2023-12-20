@@ -1,20 +1,20 @@
-﻿import discord
-import google.generativeai as genai
-from discord.ext import commands
-from pathlib import Path
-import aiohttp
+﻿import os
 import re
 
-from GeminiBotConfig import GOOGLE_AI_KEY
-from GeminiBotConfig import DISCORD_BOT_TOKEN
-from GeminiBotConfig import MAX_HISTORY
+import aiohttp
+import discord
+import google.generativeai as genai
+from discord.ext import commands
+from dotenv import load_dotenv
 
 message_history = {}
+
+load_dotenv()
 
 #---------------------------------------------AI Configuration-------------------------------------------------
 
 # Configure the generative AI model
-genai.configure(api_key=GOOGLE_AI_KEY)
+genai.configure(api_key=os.getenv("GOOGLE_AI_KEY"))
 text_generation_config = {
     "temperature": 0.9,
     "top_p": 1,
@@ -67,7 +67,7 @@ async def on_message(message):
                     #these are the only image extentions it currently accepts
                     if any(attachment.filename.lower().endswith(ext) for ext in ['.png', '.jpg', '.jpeg', '.gif', '.webp']):
                         await message.add_reaction('🎨')
-                        
+
                         async with aiohttp.ClientSession() as session:
                             async with session.get(attachment.url) as resp:
                                 if resp.status != 200:
@@ -89,9 +89,9 @@ async def on_message(message):
                     await message.channel.send("🤖 History Reset for user: " + str(message.author.name))
                     return
                 await message.add_reaction('💬')
-                
+
                 #Check if history is disabled just send response
-                if(MAX_HISTORY == 0):
+                if(os.getenv("MAX_HISTORY") == 0):
                     response_text = await generate_response_with_text(cleaned_text)
                     #add AI response to history
                     await split_and_send_messages(message, response_text, 1700)
@@ -103,8 +103,8 @@ async def on_message(message):
                 update_message_history(message.author.id,response_text)
                 #Split the Message so discord does not get upset
                 await split_and_send_messages(message, response_text, 1700)
-       
-#---------------------------------------------AI Generation History-------------------------------------------------           
+
+#---------------------------------------------AI Generation History-------------------------------------------------
 
 async def generate_response_with_text(message_text):
     prompt_parts = [message_text]
@@ -121,7 +121,7 @@ async def generate_response_with_image_and_text(image_data, text):
     if(response._error):
         return "❌" +  str(response._error)
     return response.text
-            
+
 #---------------------------------------------Message History-------------------------------------------------
 def update_message_history(user_id, text):
     # Check if user_id already exists in the dictionary
@@ -129,12 +129,12 @@ def update_message_history(user_id, text):
         # Append the new message to the user's message list
         message_history[user_id].append(text)
         # If there are more than 12 messages, remove the oldest one
-        if len(message_history[user_id]) > MAX_HISTORY:
+        if len(message_history[user_id]) > os.getenv("MAX_HISTORY"):
             message_history[user_id].pop(0)
     else:
         # If the user_id does not exist, create a new entry with the message
         message_history[user_id] = [text]
-        
+
 def get_formatted_message_history(user_id):
     """
     Function to return the message history for a given user_id with two line breaks between each message.
@@ -144,7 +144,7 @@ def get_formatted_message_history(user_id):
         return '\n\n'.join(message_history[user_id])
     else:
         return "No messages found for this user."
-    
+
 #---------------------------------------------Sending Messages-------------------------------------------------
 async def split_and_send_messages(message_system, text, max_length):
 
@@ -156,17 +156,17 @@ async def split_and_send_messages(message_system, text, max_length):
 
     # Send each part as a separate message
     for string in messages:
-        await message_system.channel.send(string)    
+        await message_system.channel.send(string)
 
 def clean_discord_message(input_string):
     # Create a regular expression pattern to match text between < and >
     bracket_pattern = re.compile(r'<[^>]+>')
     # Replace text between brackets with an empty string
     cleaned_content = bracket_pattern.sub('', input_string)
-    return cleaned_content  
+    return cleaned_content
 
 
 
 
 #---------------------------------------------Run Bot-------------------------------------------------
-bot.run(DISCORD_BOT_TOKEN)
+bot.run(os.getenv("DISCORD_BOT_TOKEN"))

@@ -13,9 +13,10 @@
 
 ### Requirements
 
-- discord.py
 - aiohttp
+- discord.py
 - Google's generativeai library
+- python-dotenv
 
 
 ### Installation
@@ -24,23 +25,25 @@
 2. Install the required Python libraries:
 
    ```
-   pip install discord.py aiohttp google-generativeai
+   pip install -U -r requirements.txt
    ```
 The bot will start listening to messages in your Discord server. It responds to direct mentions or direct messages.
 
 ## Configuration
 
-Edit the `GeminiBotConfig.py` file must include:
+1. Create a `.env` file and copy the contents of `.env.example` into it
 
-- `DISCORD_BOT_TOKEN`: Your Discord bot token.
+2. Fill in the following values:
+
+- `DISCORD_BOT_TOKEN`: Your Discord bot token
 - `GOOGLE_AI_KEY`: Your Google AI API key. Google API Key can be acquired from https://makersuite.google.com/
 - `MAX_HISTORY`: The maximum number of messages to retain in history for each user. 0 will disable history
 
-then run `GeminiDiscordBot.py`
+3. Run `GeminiDiscordBot.py`
 
 ## Commands
 
-- **Mention or DM the bot to activate:** History only works on pure text input 
+- **Mention or DM the bot to activate:** History only works on pure text input
 - **Send an Image:** The bot will respond with an AI-generated interpretation or related content.
 - **Type 'RESET':** Clears the message history for the user.
 
