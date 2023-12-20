@@ -11,10 +11,14 @@ message_history = {}
 
 load_dotenv()
 
+GOOGLE_AI_KEY = os.getenv("GOOGLE_AI_KEY")
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+MAX_HISTORY = int(os.getenv("MAX_HISTORY"))
+
 #---------------------------------------------AI Configuration-------------------------------------------------
 
 # Configure the generative AI model
-genai.configure(api_key=os.getenv("GOOGLE_AI_KEY"))
+genai.configure(api_key=GOOGLE_AI_KEY)
 text_generation_config = {
     "temperature": 0.9,
     "top_p": 1,
@@ -91,7 +95,7 @@ async def on_message(message):
                 await message.add_reaction('💬')
 
                 #Check if history is disabled just send response
-                if(os.getenv("MAX_HISTORY") == 0):
+                if(MAX_HISTORY == 0):
                     response_text = await generate_response_with_text(cleaned_text)
                     #add AI response to history
                     await split_and_send_messages(message, response_text, 1700)
@@ -129,7 +133,7 @@ def update_message_history(user_id, text):
         # Append the new message to the user's message list
         message_history[user_id].append(text)
         # If there are more than 12 messages, remove the oldest one
-        if len(message_history[user_id]) > os.getenv("MAX_HISTORY"):
+        if len(message_history[user_id]) > MAX_HISTORY:
             message_history[user_id].pop(0)
     else:
         # If the user_id does not exist, create a new entry with the message
@@ -169,4 +173,4 @@ def clean_discord_message(input_string):
 
 
 #---------------------------------------------Run Bot-------------------------------------------------
-bot.run(os.getenv("DISCORD_BOT_TOKEN"))
+bot.run(DISCORD_BOT_TOKEN)
