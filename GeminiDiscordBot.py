@@ -15,6 +15,10 @@ GOOGLE_AI_KEY = os.getenv("GOOGLE_AI_KEY")
 DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 MAX_HISTORY = int(os.getenv("MAX_HISTORY"))
 
+#---------------------------------------------System Prompt!-------------------------------------------------
+
+system_prompt = "You are a helpful bot!"
+image_prompt = "You are a helpful bot!"
 #---------------------------------------------AI Configuration-------------------------------------------------
 
 # Configure the generative AI model
@@ -37,13 +41,17 @@ safety_settings = [
     {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
     {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}
 ]
-text_model = genai.GenerativeModel(model_name="gemini-pro", generation_config=text_generation_config, safety_settings=safety_settings)
-image_model = genai.GenerativeModel(model_name="gemini-pro-vision", generation_config=image_generation_config, safety_settings=safety_settings)
+text_model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=text_generation_config, safety_settings=safety_settings,system_instruction=system_prompt)
+image_model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=image_generation_config, safety_settings=safety_settings,system_instruction=image_prompt)
 
 
 #---------------------------------------------Discord Code-------------------------------------------------
-# Initialize Discord bot
-bot = commands.Bot(command_prefix="!", intents=discord.Intents.default())
+
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
+
+bot = commands.Bot(command_prefix='!', description="Assistant bot", intents=intents)
 
 @bot.event
 async def on_ready():
