@@ -18,6 +18,13 @@
 - Google's generativeai library
 - python-dotenv
 
+  Recently updated to use Google Flash 1.5 you may need to update your python package
+
+  ```
+  pip install --upgrade google-generativeai
+
+  ```
+
 
 ### Installation
 
