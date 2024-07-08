@@ -81,6 +81,8 @@ Examples:
 `Write me a tweet about {url}`
 `What did they think of {youtubeVideo transcript}`
 
+The system_prompt for Gemini Flash has been commented out just uncomment if you want to use it.
+
 
 ## Development
 
