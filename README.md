@@ -23,7 +23,7 @@ The original bot that just does text and images is under `GeminiSimple.py`, If y
 - discord.py
 - google-generativeai
 - python-dotenv
-- youtube-transcript-api (yutube transcript_
+- youtube-transcript-api (youtube-scraping)
 - discord.py
 - google-generativeai
 - aiohttp
