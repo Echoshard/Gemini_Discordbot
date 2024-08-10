@@ -23,14 +23,10 @@ The original bot that just does text and images is under `GeminiSimple.py`, If y
 - discord.py
 - google-generativeai
 - python-dotenv
-- youtube-transcript-api (yutube transcript_
-- discord.py
-- google-generativeai
-- aiohttp
+- youtube-transcript-api (youtube transcript)
 - PyMuPDF (PDF reading)
 - requests
 - beautifulsoup4 (scraping)
-- python-dotenv
 
   Recently updated to use Google Flash 1.5 you may need to update your python package
 
