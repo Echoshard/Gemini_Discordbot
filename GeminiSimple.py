@@ -1,49 +1,77 @@
 import os
 import re
-
 import aiohttp
 import discord
 import google.generativeai as genai
 from discord.ext import commands
-from dotenv import load_dotenv
+import json
 
 message_history = {}
+config_file = 'config.json'
+# If config.json not found, will generate with this format:
+if not os.path.exists(config_file):
+    print(f"Config file '{config_file}' not found. Creating a new one...")
+    default_config = {
+        "GOOGLE_AI_KEY": "",
+        "DISCORD_BOT_TOKEN": "",
+        "MAX_HISTORY": 0,
+        "SUMMERIZE_PROMPT": "Give me 5 bullets about", 
+        "text_generation_config": {
+            "temperature": 0.9,
+            "top_p": 1,
+            "top_k": 1,
+            "max_output_tokens": 512
+        },
+        "image_generation_config" : {
+            "temperature": 0.4,
+            "top_p": 1,
+            "top_k": 32,
+            "max_output_tokens": 512
+        },
+        "safety_settings": [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"}
+        ],
+        "model_name": "gemini-1.5-flash",
+        "system_instruction":"You are a helpful bot!",
+        "image_instruction": "You are a helpful bot!"
+    }
+    with open(config_file, 'w') as f:
+        json.dump(default_config, f, indent=4)
+    print(f"Config file '{config_file}' created. Please fill in the necessary values.")
+    exit(1)  
 
-load_dotenv()
+with open(config_file) as f:
+    config = json.load(f)
 
-GOOGLE_AI_KEY = os.getenv("GOOGLE_AI_KEY")
-DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-MAX_HISTORY = int(os.getenv("MAX_HISTORY"))
+required_keys = ["GOOGLE_AI_KEY", "DISCORD_BOT_TOKEN", "MAX_HISTORY", "SUMMERIZE_PROMPT", "text_generation_config", "safety_settings", "model_name"]
+missing_keys = [key for key in required_keys if key not in config]
+empty_keys = [key for key in required_keys if key in config and not config[key]]
+
+if missing_keys:
+    print(f"Error: The following keys are missing from the config file: {', '.join(missing_keys)}")
+    exit(1)
+
+if empty_keys:
+    print(f"Error: The following keys are empty in the config file: {', '.join(empty_keys)}")
+    exit(1)
+
+GOOGLE_AI_KEY = config["GOOGLE_AI_KEY"]
+DISCORD_BOT_TOKEN = config["DISCORD_BOT_TOKEN"]
+MAX_HISTORY = int(config["MAX_HISTORY"])
+SUMMERIZE_PROMPT = config["SUMMERIZE_PROMPT"]
+
+
 
 #---------------------------------------------System Prompt!-------------------------------------------------
-
-system_prompt = "You are a helpful bot!"
-image_prompt = "You are a helpful bot!"
+# Moved to generated config.json
 #---------------------------------------------AI Configuration-------------------------------------------------
 
-# Configure the generative AI model
 genai.configure(api_key=GOOGLE_AI_KEY)
-text_generation_config = {
-    "temperature": 0.9,
-    "top_p": 1,
-    "top_k": 1,
-    "max_output_tokens": 512,
-}
-image_generation_config = {
-    "temperature": 0.4,
-    "top_p": 1,
-    "top_k": 32,
-    "max_output_tokens": 512,
-}
-safety_settings = [
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}
-]
-text_model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=text_generation_config, safety_settings=safety_settings,system_instruction=system_prompt)
-image_model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=image_generation_config, safety_settings=safety_settings,system_instruction=image_prompt)
-
+text_model = genai.GenerativeModel(model_name=config["model_name"], generation_config=config["text_generation_config"], safety_settings=config["safety_settings"], system_instruction=config["system_instruction"])
+image_model =text_model = genai.GenerativeModel(model_name=config["model_name"], generation_config=config["image_generation_config"], safety_settings=config["safety_settings"], system_instruction=config["image_instruction"])
 
 #---------------------------------------------Discord Code-------------------------------------------------
 
@@ -176,9 +204,6 @@ def clean_discord_message(input_string):
     # Replace text between brackets with an empty string
     cleaned_content = bracket_pattern.sub('', input_string)
     return cleaned_content
-
-
-
 
 #---------------------------------------------Run Bot-------------------------------------------------
 bot.run(DISCORD_BOT_TOKEN)

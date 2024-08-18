@@ -11,45 +11,64 @@ import asyncio
 #Web Scraping
 import requests
 from bs4 import BeautifulSoup
-from dotenv import load_dotenv
+import json
 
-load_dotenv()
-GOOGLE_AI_KEY = os.getenv("GOOGLE_AI_KEY")
-DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-MAX_HISTORY = int(os.getenv("MAX_HISTORY"))
+message_history= {}
+config_file = 'config.json'
+# If config.json not found, will generate with this format:
+if not os.path.exists(config_file):
+    print(f"Config file '{config_file}' not found. Creating a new one...")
+    default_config = {
+        "GOOGLE_AI_KEY": "",
+        "DISCORD_BOT_TOKEN": "",
+        "MAX_HISTORY": 0,
+        "SUMMERIZE_PROMPT": "Give me 5 bullets about", #Delete this if you dont want concise response
+        "text_generation_config": {
+            "temperature": 0.9,
+            "top_p": 1,
+            "top_k": 1,
+            "max_output_tokens": 512
+        },
+        "safety_settings": [
+            {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
+            {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
+            {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
+            {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"}
+        ],
+        "model_name": "gemini-1.5-flash",
+        "system_instruction":"" #Optional, can be used, sometimes is weird.
+    }
+    with open(config_file, 'w') as f:
+        json.dump(default_config, f, indent=4)
+    print(f"Config file '{config_file}' created. Please fill in the necessary values.")
+    exit(1)  # Exit the script to avoid running with empty config values
 
-#Default Summary Prompt if you just shove a URL in
-SUMMERIZE_PROMPT = "Give me 5 bullets about"
+with open(config_file) as f:
+    config = json.load(f)
 
-message_history = {}
+required_keys = ["GOOGLE_AI_KEY", "DISCORD_BOT_TOKEN", "MAX_HISTORY", "SUMMERIZE_PROMPT", "text_generation_config", "safety_settings", "model_name"]
+missing_keys = [key for key in required_keys if key not in config]
+empty_keys = [key for key in required_keys if key in config and not config[key]]
 
+if missing_keys:
+    print(f"Error: The following keys are missing from the config file: {', '.join(missing_keys)}")
+    exit(1)
 
-#show_debugs = False
+if empty_keys:
+    print(f"Error: The following keys are empty in the config file: {', '.join(empty_keys)}")
+    exit(1)
 
-#---------------------------------------------AI Configuration-------------------------------------------------
+GOOGLE_AI_KEY = config["GOOGLE_AI_KEY"]
+DISCORD_BOT_TOKEN = config["DISCORD_BOT_TOKEN"]
+MAX_HISTORY = int(config["MAX_HISTORY"])
+SUMMERIZE_PROMPT = config["SUMMERIZE_PROMPT"]
 
 # Configure the generative AI model
 genai.configure(api_key=GOOGLE_AI_KEY)
-text_generation_config = {
-    "temperature": 0.9,
-    "top_p": 1,
-    "top_k": 1,
-    "max_output_tokens": 512,
-}
-
-safety_settings = [
-    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_ONLY_HIGH"},
-    {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
-    {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_ONLY_HIGH"},
-    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_ONLY_HIGH"}
-]
-
-gemini_model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=text_generation_config, safety_settings=safety_settings)
-
-# Uncomment these if you want to use the system prompt but it's a bit weird
-# gemini_system_prompt = ""
-# gemini_model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=text_generation_config, safety_settings=safety_settings,system_instruction=gemini_system_prompt)
-
+gemini_model = genai.GenerativeModel(model_name=config["model_name"], 
+                                     generation_config=config["text_generation_config"], 
+                                     safety_settings=config["safety_settings"])#Optional 
+#                                    system_instruction=config["system_instruction"]
 #---------------------------------------------Discord Code-------------------------------------------------
 # Initialize Discord bot
 defaultIntents = discord.Intents.default()
