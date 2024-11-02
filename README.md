@@ -27,6 +27,7 @@ The original bot that just does text and images is under `GeminiSimple.py`, If y
 - PyMuPDF (PDF reading)
 - requests
 - beautifulsoup4 (scraping)
+- audioop-lts (only when you are using python 3.13 or newer)
 
   Recently updated to use Google Flash 1.5 you may need to update your python package
 
