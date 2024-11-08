@@ -6,3 +6,4 @@ youtube-transcript-api
 PyMuPDF
 requests
 beautifulsoup4
+audioop-lts
